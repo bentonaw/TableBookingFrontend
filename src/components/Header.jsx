@@ -6,7 +6,7 @@ export default function Header() {
 		<header className='border-b'>
 			<div className='container px-4 h-12 flex items-center justify-between'>
 				<div className='flex items-center'>
-					{/* Add a logo or site name here if needed */}
+					Snacks
 				</div>
 
 				<div className='ml-auto'>
