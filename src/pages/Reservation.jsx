@@ -1,6 +1,7 @@
-import { useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -72,6 +73,22 @@ export default function Reservation() {
 		setShowPersonalInfo(false);
 	};
 
+	const handleDateSelect = (date) => {
+		if (date) {
+			// Add timezone offset to ensure correct date
+			const localDate = new Date(
+				date.getTime() - date.getTimezoneOffset() * 60000
+			);
+			const formattedDate = localDate.toISOString().split('T')[0];
+			setFormData((prev) => ({
+				...prev,
+				date: formattedDate,
+			}));
+			fetchTimeSlots(formattedDate, formData.partySize);
+			setShowTimeSection(true);
+		}
+	};
+
 	const handleTimeSlotSelect = (event) => {
 		setFormData({ ...formData, timeSlotId: event.target.value });
 		setShowPersonalInfo(true);
@@ -94,10 +111,7 @@ export default function Reservation() {
 				phoneNumber: formData.phoneNumber,
 			};
 
-			await axios.post(
-				`${API_URL}api/reservation/`,
-				reservationData
-			);
+			await axios.post(`${API_URL}api/reservation/`, reservationData);
 			setSuccess(
 				'Reservation created successfully! Your table has been automatically assigned.'
 			);
@@ -143,7 +157,7 @@ export default function Reservation() {
 			<form onSubmit={handleSubmit} className='space-y-6'>
 				<div className='space-y-4'>
 					<h3 className='text-lg font-medium'>Select your party size:</h3>
-					<div className='grid grid-cols-4 gap-2'>
+					<div className='grid grid-cols-4 sm:grid-cols-8 gap-2'>
 						{[1, 2, 3, 4, 5, 6, 7, 8].map((size) => (
 							<Button
 								key={size}
@@ -158,18 +172,22 @@ export default function Reservation() {
 				</div>
 
 				{showDateSection && (
-					<div className='space-y-4 animate-fadeIn'>
-						<div>
-							<Label htmlFor='date'>Select a date</Label>
-							<Input
-								type='date'
-								id='date'
-								name='date'
-								value={formData.date}
-								onChange={handleInputChange}
-								min={new Date().toISOString().split('T')[0]}
-								required
+					<div className='space-y-4 animate-fadeIn mb-32'>
+						<div className='flex flex-col items-center'>
+							<Label htmlFor='date' className='pb-4 text-2xl'>
+								Select a date
+							</Label>
+							<Calendar
+								mode='single'
+								selected={
+									formData.date
+										? new Date(formData.date + 'T00:00:00')
+										: undefined
+								}
+								onSelect={handleDateSelect}
+								className='rounded-md border scale-150 transform origin-top'
 							/>
+							<div className='h-48'></div>
 						</div>
 					</div>
 				)}
